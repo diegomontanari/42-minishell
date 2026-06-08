@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Compiled
+*.o
+*.a
+minishell
+
+# Test artifacts
+test.sh
