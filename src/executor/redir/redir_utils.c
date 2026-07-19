@@ -38,10 +38,11 @@ int	open_regular_file(char *filename, int token_type)
 **
 ** This function opens a file depending on the redirection type.
 */
-int	open_file_by_type(char *filename, int token_type, t_shell *shell)
+int	open_file_by_type(char *filename, int token_type,
+			int is_quoted, t_shell *shell)
 {
 	if (token_type == TK_HEREDOC)
-		return (create_heredoc_pipe(filename, shell));
+		return (create_heredoc_pipe(filename, is_quoted, shell));
 	return (open_regular_file(filename, token_type));
 }
 

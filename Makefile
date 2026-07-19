@@ -28,7 +28,6 @@ SRC     = \
         executor/executor_utils.c \
         executor/executor_setup.c \
         executor/executor_cmd_utils.c \
-        executor/executor_child.c \
         executor/executor_ext.c \
         executor/signals.c \
         executor/signal_utils.c \
@@ -53,7 +52,6 @@ SRC     = \
         executor/pipe/pipe_exec.c \
         executor/pipe/pipe_utils.c \
         executor/pipe/pipe_child.c \
-        executor/pipe/pipe_setup.c \
         executor/pipe/pipe_cmd.c \
         executor/pipe/pipe_io.c \
         executor/redir/redir_exec.c \

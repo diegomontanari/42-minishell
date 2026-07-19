@@ -84,29 +84,3 @@ void	execute_child_process(t_cmd *curr, int prev_fd,
 	else
 		execute_system_command(curr, shell);
 }
-
-/*
-** execute_cmd_in_pipe
-**
-** This function executes a single command in the context of a
-** pipe.
-*/
-int	execute_cmd_in_pipe(t_cmd *cmd, t_shell *shell)
-{
-	char	*cmd_path;
-	int		status;
-
-	if (!cmd || !cmd->args || !cmd->args[0])
-	{
-		print_error("minishell: command structure error");
-		return (1);
-	}
-	if (is_builtin(cmd->args[0]))
-		return (handle_builtin(cmd->args, shell));
-	cmd_path = find_command_path(cmd->args[0], shell);
-	if (!cmd_path)
-		return (print_error(cmd->args[0]), 127);
-	status = execute_external_command(cmd_path, cmd->args, shell);
-	free(cmd_path);
-	exit(status);
-}

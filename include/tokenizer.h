@@ -44,7 +44,6 @@ typedef struct s_token_ctx
 //  1) LINE CONSTRUCTION
 
 t_token		*parse_line_to_tokens(const char *str, struct s_shell *shell);
-int			has_unclosed_quotes(const char *str);
 char		*get_full_line(char *initial_input);
 
 // 2) PARSING HELPERS

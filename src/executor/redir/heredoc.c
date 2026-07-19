@@ -4,12 +4,18 @@
 ** process_heredoc_line
 **
 ** This helper function processes a single line in a heredoc.
+** If the delimiter was quoted (e.g. << 'EOF'), variable
+** expansion must not happen inside the body, matching bash.
 */
-static int	process_heredoc_line(int write_fd, char *line, t_shell *shell)
+static int	process_heredoc_line(int write_fd, char *line,
+			int is_quoted, t_shell *shell)
 {
 	char	*expanded_line;
 
-	expanded_line = expand_variables(line, shell);
+	if (is_quoted)
+		expanded_line = ft_strdup(line);
+	else
+		expanded_line = expand_variables(line, shell);
 	if (!expanded_line)
 		return (-1);
 	if (write(write_fd, expanded_line, ft_strlen(expanded_line)) == -1
@@ -29,7 +35,8 @@ static int	process_heredoc_line(int write_fd, char *line, t_shell *shell)
 ** This function continuously reads user input until the heredoc
 ** delimiter is reached.
 */
-static int	read_heredoc_lines(int write_fd, char *delimiter, t_shell *shell)
+static int	read_heredoc_lines(int write_fd, char *delimiter,
+			int is_quoted, t_shell *shell)
 {
 	char	*line;
 
@@ -48,7 +55,7 @@ static int	read_heredoc_lines(int write_fd, char *delimiter, t_shell *shell)
 			free(line);
 			break ;
 		}
-		if (process_heredoc_line(write_fd, line, shell) == -1)
+		if (process_heredoc_line(write_fd, line, is_quoted, shell) == -1)
 		{
 			free(line);
 			return (-1);
@@ -63,7 +70,7 @@ static int	read_heredoc_lines(int write_fd, char *delimiter, t_shell *shell)
 **
 ** This function creates a pipe and fills it with heredoc input.
 */
-int	create_heredoc_pipe(char *delimiter, t_shell *shell)
+int	create_heredoc_pipe(char *delimiter, int is_quoted, t_shell *shell)
 {
 	int	pipe_fd[2];
 	int	result;
@@ -73,7 +80,7 @@ int	create_heredoc_pipe(char *delimiter, t_shell *shell)
 		perror("minishell: pipe");
 		return (-1);
 	}
-	result = read_heredoc_lines(pipe_fd[1], delimiter, shell);
+	result = read_heredoc_lines(pipe_fd[1], delimiter, is_quoted, shell);
 	close(pipe_fd[1]);
 	if (result == -1)
 	{

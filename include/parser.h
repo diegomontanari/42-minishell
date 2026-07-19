@@ -39,9 +39,6 @@ char		*extract_and_expand_word(const char *input, int *i,
 
 //  5) REDIRECTION VALIDATION 
 
-int			valid_redirections(t_token *tokens);
-int			validate_in_redirections(t_token *tokens);
-int			validate_heredoc_redirections(t_token *tokens);
 int			valid_syntax_token(t_token *curr);
 int			is_redir_target(t_token *tokens, t_token *curr);
 int			is_redirection_file(t_token *tokens, t_token *curr);

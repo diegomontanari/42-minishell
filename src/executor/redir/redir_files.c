@@ -10,7 +10,8 @@ int	open_input_file(t_token *curr, t_shell *shell)
 	char	*filename;
 
 	filename = curr->next->value;
-	return (open_file_by_type(filename, curr->type, shell));
+	return (open_file_by_type(filename, curr->type,
+			curr->next->is_quoted, shell));
 }
 
 /*

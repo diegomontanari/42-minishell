@@ -58,12 +58,6 @@ char	**prepare_cmd_args(t_token *tokens, struct s_shell *shell);
 
 char	**build_envp_from_list(struct s_env *env);
 
-/* executor_child.c */
-int		setup_child_pipe(int pipe_fd[2], int is_left);
-int		fork_first_child(t_cmd *cmd1, struct s_shell *shell, int pipe_fd[2]);
-int		fork_second_child(t_cmd *cmd2, struct s_shell *shell, int pipe_fd[2],
-			pid_t pid1);
-
 /* executor_ext.c */
 int		execute_exit(char **args, struct s_shell *shell);
 int		handle_other_builtins(char **args, struct s_shell *shell);
@@ -174,11 +168,6 @@ int		handle_pipeline_execution(t_token *tokens, struct s_shell *shell);
 /* pipe_child.c */
 void	execute_child_process(t_cmd *curr, int prev_fd, int *pipe_fd,
 			struct s_shell *shell);
-int		execute_cmd_in_pipe(t_cmd *cmd, struct s_shell *shell);
-
-/* pipe_setup.c */
-int		create_pipe_and_setup(int pipe_fd[2]);
-int		handle_pipe(t_cmd *cmd1, t_cmd *cmd2, struct s_shell *shell);
 
 /* pipe_utils.c */
 int		check_for_pipes(t_token *tokens);
@@ -216,7 +205,7 @@ int		setup_output_redirection(int file_fd, struct s_shell *shell);
 /* redir_utils.c */
 int		open_regular_file(char *filename, int token_type);
 int		open_file_by_type(char *filename, int token_type,
-			struct s_shell *shell);
+			int is_quoted, struct s_shell *shell);
 int		has_input_redirection(t_token *tokens);
 int		has_output_redirection(t_token *tokens);
 
@@ -228,6 +217,7 @@ int		handle_single_input_redirect(t_token *curr, struct s_shell *shell,
 void	setup_sigpipe_handling(void);
 
 /* heredoc.c */
-int		create_heredoc_pipe(char *delimiter, struct s_shell *shell);
+int		create_heredoc_pipe(char *delimiter, int is_quoted,
+			struct s_shell *shell);
 
 #endif

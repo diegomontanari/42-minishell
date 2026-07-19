@@ -73,8 +73,6 @@ static int	run_prompt_once(t_shell *shell)
 		reset_loop_state(shell);
 		return (1);
 	}
-	if (*input)
-		add_history(input);
 	process_input_line(input, shell);
 	free(input);
 	reset_loop_state(shell);
