@@ -1,86 +1,79 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*   executor.c                                                               */
-/*                                                                            */
-/*   Entry point for command execution.                                       */
-/*   Single builtin without pipes runs in the current process so it can       */
-/*   modify shell state (cd, export, unset, exit). Everything else goes       */
-/*   through the pipeline path which forks child processes.                   */
-/*                                                                            */
-/* ************************************************************************** */
+#include "minishell.h"
+#include <sys/stat.h>
 
-#include "../../include/minishell.h"
-
-/* Builtin names are compared case-sensitively, matching bash behaviour. */
-static const char	*g_builtins[] = {
-	"echo", "cd", "pwd", "export", "unset", "env", "exit", NULL
-};
-
-/*
- * Checks if cmd->args[0] matches any builtin name.
- * Returns 1 if builtin, 0 otherwise.
- */
-int	is_builtin(t_cmd *cmd)
+int	execute_command_type(char **args, t_shell *shell)
 {
-	int	i;
+	char		*command_path;
+	int			status;
+	struct stat	path_stat;
 
-	if (!cmd || !cmd->args || !cmd->args[0])
-		return (0);
-	i = -1;
-	while (g_builtins[++i])
+	if (is_builtin(args[0]))
+		return (handle_builtin(args, shell));
+	command_path = find_command_path(args[0], shell);
+	if (!command_path)
 	{
-		if (ft_strlen(cmd->args[0]) == ft_strlen(g_builtins[i])
-			&& ft_strncmp(cmd->args[0], g_builtins[i],
-				ft_strlen(g_builtins[i])) == 0)
-			return (1);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(args[0], 2);
+		ft_putstr_fd(": command not found\n", 2);
+		return (127);
 	}
-	return (0);
+	status = check_command_path_access(command_path, args[0], &path_stat);
+	if (status != 0)
+		return (status);
+	status = execute_external_command(command_path, args, shell);
+	free(command_path);
+	return (status);
 }
 
-/*
- * Dispatches to the matching builtin function.
- * Returns the builtin's exit status.
- */
-int	execute_builtin(t_cmd *cmd, t_shell *shell)
+static int	handle_external_command(char **args, t_shell *shell)
 {
-	char	*name;
-
-	name = cmd->args[0];
-	if (ft_strncmp(name, "echo", 5) == 0)
-		return (builtin_echo(cmd));
-	if (ft_strncmp(name, "cd", 3) == 0)
-		return (builtin_cd(cmd, shell));
-	if (ft_strncmp(name, "pwd", 4) == 0)
-		return (builtin_pwd());
-	if (ft_strncmp(name, "export", 7) == 0)
-		return (builtin_export(cmd, shell));
-	if (ft_strncmp(name, "unset", 6) == 0)
-		return (builtin_unset(cmd, shell));
-	if (ft_strncmp(name, "env", 4) == 0)
-		return (builtin_env(shell));
-	if (ft_strncmp(name, "exit", 5) == 0)
-		return (builtin_exit(cmd, shell));
-	return (1);
+	return (execute_command_type(args, shell));
 }
 
-/*
- * Main execution entry point called by process_line.
- * Single builtin: runs in-process to let it change shell state.
- * Anything else: delegates to execute_pipeline (forks children).
- */
-void	execute(t_shell *shell)
+static int	handle_builtin_execution(char **args, t_shell *shell)
 {
-	if (!shell->cmds)
-		return ;
-	signals_executing();
-	if (!shell->cmds->next && is_builtin(shell->cmds))
-	{
-		apply_redirs(shell->cmds->redirs, shell);
-		shell->exit_status = execute_builtin(shell->cmds, shell);
-		dup2(shell->stdin_backup, STDIN_FILENO);
-		dup2(shell->stdout_backup, STDOUT_FILENO);
-	}
+	if (ft_strcmp(args[0], "exit") == 0)
+		return (execute_exit(args, shell));
 	else
-		execute_pipeline(shell);
-	signals_interactive();
+		return (handle_other_builtins(args, shell));
+}
+
+static int	prepare_and_redir(t_token *tokens, char ***args, t_shell *shell)
+{
+	if (!tokens)
+		return (handle_null_tokens(shell));
+	if (check_for_pipes(tokens))
+		return (handle_pipeline_execution(tokens, shell));
+	*args = prepare_cmd_args(tokens, shell);
+	if (handle_redirection_with_tokens(tokens, shell) == -1)
+	{
+		free_str_array(*args);
+		shell->exit_status = 1;
+		return (1);
+	}
+	if (!*args)
+	{
+		restore_redirection(shell);
+		shell->exit_status = 0;
+		return (0);
+	}
+	return (-1);
+}
+
+int	execute_command(t_token *tokens, t_shell *shell)
+{
+	char	**args;
+	int		status;
+
+	status = prepare_and_redir(tokens, &args, shell);
+	if (status != -1)
+		return (status);
+	if (is_builtin(args[0]))
+		status = handle_builtin_execution(args, shell);
+	else
+		status = handle_external_command(args, shell);
+	restore_redirection(shell);
+	free_str_array(args);
+	shell->exit_status = status;
+	return (status);
 }

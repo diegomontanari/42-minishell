@@ -9,6 +9,4 @@
 *.o
 *.a
 minishell
-
-# Test artifacts
-test.sh
+obj/

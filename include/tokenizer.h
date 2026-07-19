@@ -1,66 +1,71 @@
 #ifndef TOKENIZER_H
 # define TOKENIZER_H
 
-/* ── Token types ─────────────────────────────────────────────────────── */
-/*
- * Enum used by the tokenizer to tag each token with its syntactic role.
- * TOKEN_WORD        : a plain word, command name, or argument.
- * TOKEN_PIPE        : the | operator connecting two commands.
- * TOKEN_REDIR_IN    : < redirect stdin from file.
- * TOKEN_REDIR_OUT   : > redirect stdout to file (truncate).
- * TOKEN_REDIR_APPEND: >> redirect stdout to file (append).
- * TOKEN_HEREDOC     : << read stdin until delimiter.
- */
-typedef enum e_token_type
-{
-	TOKEN_WORD,
-	TOKEN_PIPE,
-	TOKEN_REDIR_IN,
-	TOKEN_REDIR_OUT,
-	TOKEN_REDIR_APPEND,
-	TOKEN_HEREDOC,
-}	t_token_type;
+// We assume t_shell is typedef'd before including this file,
+// or we use struct s_shell.
+// To ensure standalone validity if needed,
+// we can forward declare struct s_shell.
+struct	s_shell;
 
-/* ── t_token ─────────────────────────────────────────────────────────── */
-/*
- * A single unit produced by the tokenizer from the raw input string.
- * Tokens form a singly-linked list consumed by the parser.
- *
- * value : the raw string of the token (e.g. "ls", "|", "file.txt").
- *         Heap-allocated; must be freed when the list is destroyed.
- * type  : syntactic role assigned during tokenization.
- * next  : pointer to the following token, NULL if last.
- */
+//  TOKEN TYPES & STRUCTS
+// t_token_types: tipi di token generati dal tokenizer.
+
+typedef enum e_token_types
+{
+	TK_WORD,
+	TK_PIPE,
+	TK_OUT,
+	TK_APPEND,
+	TK_IN,
+	TK_HEREDOC,
+	TK_EOF
+}	t_token_types;
+
+// struct s_token: nodo della lista di token.
+
 typedef struct s_token
 {
 	char			*value;
-	t_token_type	type;
+	int				type;
+	int				is_quoted;
 	struct s_token	*next;
 }	t_token;
 
-/* ── Forward declaration ─────────────────────────────────────────────── */
-/*
- * t_shell is defined in minishell.h which includes this file.
- * A forward declaration is enough here because tokenize() only
- * takes a pointer to it; the compiler does not need the full layout.
- */
-typedef struct s_shell	t_shell;
+// t_token_ctx: contesto per operazioni di parsing dei token.
+typedef struct s_token_ctx
+{
+	const char		*input; // Stringa di input da parsare
+	int				*i; // Indice per la posizione corrente nella stringa
+	t_token			**tokens; // Lista di token generati
+	struct s_shell	*shell; // accesso allo stato "globale"
+	int				has_space; // Flag per indicare se c'è spazio tra i token
+}	t_token_ctx;
 
-/* ── Public tokenizer interface ──────────────────────────────────────── */
+//  1) LINE CONSTRUCTION
 
-t_token	*tokenize(char *line, t_shell *shell);
-t_token	*new_token(char *value, t_token_type type);
+t_token		*parse_line_to_tokens(const char *str, struct s_shell *shell);
+int			has_unclosed_quotes(const char *str);
+char		*get_full_line(char *initial_input);
 
-/* ── Internal tokenizer functions ────────────────────────────────────── */
-/*
- * Used across multiple .c files inside the tokenizer module.
- * is_operator   : returns 1 if c is |, < or >.
- * handle_operator: reads an operator token and advances the index.
- * handle_word   : reads a word token (with quotes) and advances.
- */
+// 2) PARSING HELPERS
 
-int		is_operator(char c);
-t_token	*handle_operator(char *line, int *i);
-t_token	*handle_word(char *line, int *i);
+int			skip_spaces_and_check(const char *str, int *i,
+				int *has_space);
+int			is_separator(char c);
+char		*extract_quoted_content(const char *str, int *index,
+				char quote_char);
+
+//  3) TOKEN CREATION
+
+void		add_redir_token(t_token_ctx *ctx);
+int			add_quoted_token(t_token_ctx *context);
+void		add_word_token(t_token_ctx *context);
+
+// 4) TOKEN LIST OPS
+
+t_token		*new_token(char *value, int type, int is_quoted);
+int			join_to_last_token(t_token_ctx *ctx, char *new_text);
+void		add_token_to_list(t_token **head, t_token *new_token);
+t_token		*get_last_token(t_token *head);
 
 #endif

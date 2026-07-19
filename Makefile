@@ -1,74 +1,107 @@
-# **************************************************************************** #
-#                                                                              #
-#    Makefile                                                                  #
-#                                                                              #
-# **************************************************************************** #
+# Compiler and flags
+CC      = gcc
+CFLAGS  = -Wall -Wextra -Werror \
+          -Iinclude -Ilibft
 
-NAME		= minishell
+# Directories
+SRC_DIR   = src
+OBJ_DIR   = obj
+LIBFT_DIR = libft
 
-CC			= cc
-CFLAGS		= -Wall -Wextra -Werror
-RM			= rm -f
+# Executable name
+NAME    = minishell
 
-# Homebrew readline (macOS ships libedit, not GNU readline)
-RL_DIR		= $(shell brew --prefix readline 2>/dev/null)
-RL_INC		= -I$(RL_DIR)/include
-RL_LIB		= -L$(RL_DIR)/lib -lreadline
+# Source files (relative to $(SRC_DIR))
+SRC     = \
+        error/error.c \
+        cleanup/clean_env_shell.c \
+        cleanup/clean_structs.c \
+        cleanup/clean_utils.c \
+        tokenizer/utils/quotes_utils.c \
+        tokenizer/utils/input_utils.c \
+        tokenizer/tokenizer_core.c \
+        tokenizer/token_list.c \
+        tokenizer/handlers/handle_redirection.c \
+        tokenizer/handlers/handle_quotes.c \
+        tokenizer/handlers/handle_words.c \
+        executor/executor.c \
+        executor/executor_utils.c \
+        executor/executor_setup.c \
+        executor/executor_cmd_utils.c \
+        executor/executor_child.c \
+        executor/executor_ext.c \
+        executor/signals.c \
+        executor/signal_utils.c \
+        executor/path.c \
+        executor/path_utils.c \
+        executor/path_split.c \
+        executor/builtins/builtins.c \
+        executor/builtins/cd.c \
+        executor/builtins/echo.c \
+        executor/builtins/env.c \
+        executor/builtins/env_utils.c \
+        executor/builtins/env_node.c \
+        executor/builtins/env_access.c \
+        executor/builtins/exit.c \
+        executor/builtins/exit_utils.c \
+        executor/builtins/export.c \
+        executor/builtins/export_utils.c \
+        executor/builtins/export_sort.c \
+        executor/builtins/export_print.c \
+        executor/builtins/pwd.c \
+        executor/builtins/unset.c \
+        executor/pipe/pipe_exec.c \
+        executor/pipe/pipe_utils.c \
+        executor/pipe/pipe_child.c \
+        executor/pipe/pipe_setup.c \
+        executor/pipe/pipe_cmd.c \
+        executor/pipe/pipe_io.c \
+        executor/redir/redir_exec.c \
+        executor/redir/redir_utils.c \
+        executor/redir/redir_files.c \
+        executor/redir/redir_apply.c \
+        executor/redir/redir_handle.c \
+        executor/redir/heredoc.c \
+        parser/utils/token_utils.c \
+        parser/utils/utils.c \
+        parser/redirection/validate_redir.c \
+        parser/redirection/cmd_args.c \
+        parser/cmd_list.c \
+        parser/expansion/expand_env.c \
+        parser/expansion/expand_vars.c \
+        shell/main.c \
+        shell/prompt.c \
+        shell/input.c 
 
-LIBFT_DIR	= libft
-LIBFT		= $(LIBFT_DIR)/libft.a
+# Object files
+OBJ     = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
-# ── Source files ─────────────────────────────────────────────────────────── #
+# Path to libft
+LIBFT   = $(LIBFT_DIR)/libft.a
 
-SRC			= src/shell/main.c \
-			  src/shell/signals.c \
-			  src/tokenizer/tokenizer.c \
-			  src/tokenizer/handlers/handle_operator.c \
-			  src/tokenizer/handlers/handle_word.c \
-			  src/parser/parser.c \
-			  src/parser/parse_redir.c \
-			  src/parser/parse_args.c \
-			  src/expander/expander.c \
-			  src/expander/expand_args.c \
-			  src/executor/executor.c \
-			  src/executor/find_path.c \
-			  src/executor/env_utils.c \
-			  src/executor/pipe/pipeline.c \
-			  src/executor/pipe/child.c \
-			  src/executor/redir/redir.c \
-			  src/executor/redir/heredoc.c \
-			  src/executor/builtins/builtin_echo.c \
-			  src/executor/builtins/builtin_cd.c \
-			  src/executor/builtins/builtin_pwd.c \
-			  src/executor/builtins/builtin_export.c \
-			  src/executor/builtins/builtin_export_utils.c \
-			  src/executor/builtins/builtin_unset.c \
-			  src/executor/builtins/builtin_env.c \
-			  src/executor/builtins/builtin_exit.c \
-			  src/error/error.c \
-			  src/cleanup/cleanup.c
+# Default target
+all: $(NAME)
 
-OBJ			= $(SRC:.c=.o)
+# Link final binary
+$(NAME): $(LIBFT) $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -lreadline -o $(NAME)
 
-# ── Rules ────────────────────────────────────────────────────────────────── #
+# Compile objects (keeps directory structure in obj/)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-all: $(LIBFT) $(NAME)
-
+# Build libft
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
-$(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(RL_LIB) -o $(NAME)
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(RL_INC) -c $< -o $@
-
+# Cleaning rules
 clean:
-	$(RM) $(OBJ)
+	rm -rf $(OBJ_DIR)
 	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
-	$(RM) $(NAME)
+	rm -f $(NAME)
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all

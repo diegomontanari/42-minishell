@@ -1,61 +1,60 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*   error.c                                                                  */
-/*                                                                            */
-/*   Syntax error reporting and token validation.                             */
-/*   Checks for common mistakes before parsing starts:                        */
-/*   pipes at start/end, double pipes, redirection without filename.          */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "../../include/minishell.h"
-
-/* Prints a syntax error message for an unexpected token. */
-void	syntax_error(char *token)
+#include "minishell.h"
+/*
+** Prints an error message, optionally cleans up resources,
+** and terminates the program.
+**
+** 1. If `use_errno` is non-zero:
+**    - Print "minishell: " to stderr.
+**    - Call `perror` with `msg` to display the system
+**      error message.
+** 2. If `use_errno` is zero:
+**    - Print `msg` directly to stderr.
+** 3. If `flag` is non-zero and `context` is provided:
+**    - Cast `context` to `t_shell *` and call
+**      `reset_loop_state` to free per-command resources.
+** 4. Exit the program with `EXIT_FAILURE`.
+*/
+// aggiunta di codice???? 			//else if (context)
+									// reset_loop_state((t_shell *)context);
+void	exit_with_error(char *msg, void *context, int flag, int use_errno)
 {
-	ft_putstr_fd("minishell: syntax error near unexpected token `",
-		STDERR_FILENO);
-	ft_putstr_fd(token, STDERR_FILENO);
-	ft_putstr_fd("'\n", STDERR_FILENO);
+	if (use_errno)
+	{
+		ft_putstr_fd("minishell: ", 2);
+		perror(msg);
+	}
+	else
+		ft_putstr_fd(msg, 2);
+	if (flag && context)
+		reset_loop_state((t_shell *)context);
+	exit(EXIT_FAILURE);
 }
 
-/* Returns the string representation of a token for error messages. */
-static char	*token_str(t_token *tok)
+/*
+** Prints a formatted error message to stderr and returns -1.
+**
+** 1. Print "minishell: " to stderr.
+** 2. Use `perror` with `msg` to append the system error
+**    description.
+** 3. Return -1, allowing the caller to detect the error
+**    while preserving standard error reporting.
+*/
+int	print_error(char *msg)
 {
-	if (!tok)
-		return ("newline");
-	return (tok->value);
+	ft_putstr_fd("minishell: ", 2);
+	perror(msg);
+	return (-1);
 }
 
-/* Checks if the token list has valid syntax. Returns 0 if ok, -1 if not. */
-int	check_syntax(t_token *tokens, t_shell *shell)
+/*
+** Prints a syntax error message for an unexpected pipe token.
+**
+** 1. Output a fixed error message to stderr indicating a
+**    syntax error with the '|' token.
+** 2. Return 1 to signal an error condition to the caller.
+*/
+int	print_pipe_error(void)
 {
-	t_token	*tok;
-
-	tok = tokens;
-	if (tok && tok->type == TOKEN_PIPE)
-	{
-		syntax_error("|");
-		shell->exit_status = 2;
-		return (-1);
-	}
-	while (tok)
-	{
-		if (tok->type == TOKEN_PIPE && (!tok->next
-				|| tok->next->type == TOKEN_PIPE))
-		{
-			syntax_error(token_str(tok->next));
-			shell->exit_status = 2;
-			return (-1);
-		}
-		if (is_redir(tok->type) && (!tok->next
-				|| tok->next->type != TOKEN_WORD))
-		{
-			syntax_error(token_str(tok->next));
-			shell->exit_status = 2;
-			return (-1);
-		}
-		tok = tok->next;
-	}
-	return (0);
+	ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+	return (1);
 }
