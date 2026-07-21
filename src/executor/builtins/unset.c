@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   unset.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -56,7 +44,7 @@ int	remove_env_node(t_env **env_list_ptr, char *key)
 */
 static int	process_unset_arg(t_env **env_list_ptr, char *arg)
 {
-	if (!is_valid_identifier(arg))
+	if (ft_strchr(arg, '=') || !is_valid_identifier(arg))
 	{
 		ft_putstr_fd("unset: `", 2);
 		ft_putstr_fd(arg, 2);

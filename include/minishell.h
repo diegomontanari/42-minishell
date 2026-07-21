@@ -1,19 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   minishell.h                                 :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-// SYSTEM INCLUDES
+/* SYSTEM INCLUDES */
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -25,8 +13,7 @@
 # include <errno.h>
 # include <limits.h>
 # include <fcntl.h>
-
-// PROJECT INCLUDES
+/* PROJECT INCLUDES */
 
 # include "../libft/libft.h"
 # include "tokenizer.h"
@@ -34,12 +21,11 @@
 # include "parser.h"
 # include "cleanup.h"
 
-// FORWARD DECLARATION OF T_SHELL
-// This allows module headers to use 'struct s_shell *' or 't_shell *'
+/* FORWARD DECLARATION OF T_SHELL */
 typedef struct s_shell			t_shell;
-//  CORE TYPES
+/* CORE TYPES */
 
-// t_shell: Main shell context structure holding all runtime state.
+/* Main shell context structure holding all runtime state */
 
 struct s_shell
 {
@@ -55,11 +41,11 @@ struct s_shell
 	int			stdout_backup;
 };
 
-// GLOBAL VARIABLES
+/* GLOBAL VARIABLES */
 
 extern volatile sig_atomic_t	g_signal;
 
-// CORE FUNCTIONS 
+/* CORE FUNCTIONS */
 
 void		init_shell_state(t_shell *shell, char **envp);
 int			start_shell_loop(t_shell *shell);
@@ -67,7 +53,7 @@ void		process_input_line(char *input, t_shell *shell);
 int			only_spaces(const char *str);
 char		*expand_program_name(char *input, int pos, t_shell *shell);
 
-// ERROR FUNCTIONS
+/* ERROR FUNCTIONS */
 
 void		exit_with_error(char *msg, void *context, int flag, int use_errno);
 int			print_error(char *msg);

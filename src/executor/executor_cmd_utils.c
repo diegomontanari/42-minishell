@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor_cmd_utils.c                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 #include <sys/stat.h>
 
@@ -18,10 +6,15 @@
 */
 int	setup_redirection(t_token *tokens, char **args, t_shell *shell)
 {
-	if (handle_redirection_with_tokens(tokens, shell) == -1)
+	int	status;
+
+	status = handle_redirection_with_tokens(tokens, shell);
+	if (status < 0)
 	{
 		free_str_array(args);
 		shell->exit_status = 1;
+		if (status == -2)
+			shell->exit_status = 130;
 		return (-1);
 	}
 	return (0);

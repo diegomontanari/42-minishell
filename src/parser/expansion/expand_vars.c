@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   expand_vars.c                               :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -77,9 +65,20 @@ static char	*process_dollar_sign(char *input, int pos, t_shell *shell)
 	else if (ft_isalpha(input[pos + 1]) || input[pos + 1] == '_')
 		new_str = expand_environment_variable(input, pos,
 				expand_find_end_index(input, pos), shell);
-	if (!new_str)
+	else
 		return (input);
+	if (!new_str)
+		return (NULL);
 	return (free(input), new_str);
+}
+
+static int	expansion_token_len(char *input, int pos)
+{
+	if (input[pos + 1] == '?' || input[pos + 1] == '0')
+		return (2);
+	if (ft_isalpha(input[pos + 1]) || input[pos + 1] == '_')
+		return (expand_find_end_index(input, pos) - pos);
+	return (1);
 }
 
 /*
@@ -99,11 +98,15 @@ static char	*process_dollar_sign(char *input, int pos, t_shell *shell)
 static int	expand_process_iter(char **result, int *i, t_shell *shell)
 {
 	char	*temp;
+	int		old_len;
+	int		token_len;
 
 	if ((*result)[*i] != '$')
 		return (0);
 	if ((*result)[*i + 1] == '\0')
 		return (0);
+	old_len = (int)ft_strlen(*result);
+	token_len = expansion_token_len(*result, *i);
 	temp = process_dollar_sign(*result, *i, shell);
 	if (!temp)
 	{
@@ -111,12 +114,11 @@ static int	expand_process_iter(char **result, int *i, t_shell *shell)
 		*result = NULL;
 		return (-1);
 	}
-	if (temp != *result)
-	{
-		*result = temp;
-		return (1);
-	}
-	return (0);
+	if (temp == *result)
+		return (0);
+	*result = temp;
+	*i += (int)ft_strlen(temp) - old_len + token_len;
+	return (1);
 }
 
 /*

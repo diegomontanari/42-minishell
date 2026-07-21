@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   pipe_io.c                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -63,12 +51,19 @@ static void	setup_child_pipes(t_cmd *curr, int prev_fd, int *pipe_fd)
 */
 static void	setup_child_redir_and_signals(t_cmd *curr, t_shell *shell)
 {
+	int	status;
+
 	if (curr->tokens)
 	{
-		if (handle_redirection_with_tokens(curr->tokens, shell) == -1)
+		status = handle_redirection_with_tokens(curr->tokens, shell);
+		if (status < 0)
 		{
+			if (status == -2)
+				shell->exit_status = 130;
+			else
+				shell->exit_status = 1;
 			full_shell_cleanup(shell);
-			exit(1);
+			exit(shell->exit_status);
 		}
 	}
 	setup_signals_child();

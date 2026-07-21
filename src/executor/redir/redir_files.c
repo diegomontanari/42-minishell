@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   redir_files.c                               :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -20,7 +8,15 @@
 int	open_input_file(t_token *curr, t_shell *shell)
 {
 	char	*filename;
+	int		fd;
 
+	if (curr->type == TK_HEREDOC && curr->heredoc_fd >= 0)
+	{
+		fd = dup(curr->heredoc_fd);
+		if (fd == -1)
+			perror("minishell: dup");
+		return (fd);
+	}
 	filename = curr->next->value;
 	return (open_file_by_type(filename, curr->type,
 			curr->next->is_quoted, shell));

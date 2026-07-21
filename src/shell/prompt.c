@@ -1,43 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   prompt.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-/*
-** build_prompt
-**
-** Costruisce il prompt 
-** Esempio: "minishell:/home/user$ "
-*/
-/*
-static char	*build_prompt(t_shell *shell)
-{
-	char	*dir;
-	char	*tmp;
-	char	*prompt;
-
-	(void)shell;
-	dir = get_current_directory();
-	if (!dir)
-		return (ft_strdup("minishell$ "));
-	tmp = ft_strjoin("minishell:", dir);
-	free(dir);
-	if (!tmp)
-		return (ft_strdup("minishell$ "));
-	prompt = ft_strjoin(tmp, "$ ");
-	free(tmp);
-	return (prompt);
-}
-*/
 /*
 ** signal_prompt_handler
 **
@@ -67,7 +29,7 @@ static char	*build_prompt(t_shell *shell)
 /*
 ** run_prompt_once
 **
-** Mostra il prompt, chiama readline() e gestisce l'input.
+** Displays the prompt, calls readline(), and handles the input.
 */
 static int	run_prompt_once(t_shell *shell)
 {
@@ -94,7 +56,7 @@ static int	run_prompt_once(t_shell *shell)
 /*
 ** start_shell_loop
 **
-** Loop principale del minishell.
+** Main minishell loop.
 */
 int	start_shell_loop(t_shell *shell)
 {

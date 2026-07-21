@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   path_utils.c                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -52,6 +40,6 @@ char	*extract_path_segment(char *path_env, int start, int len)
 	segment = ft_calloc(len + 1, sizeof(char));
 	if (!segment)
 		return (NULL);
-	ft_strncpy(segment, &path_env[start], len);
+	ft_strlcpy(segment, &path_env[start], len + 1);
 	return (segment);
 }

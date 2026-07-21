@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   validate_redir.c                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -29,6 +17,21 @@ int	valid_syntax_token(t_token *token)
 	{
 		ft_putstr_fd("minishell: syntax error near redirection\n", 2);
 		return (-1);
+	}
+	return (0);
+}
+
+int	validate_redirection_syntax(t_token *tokens)
+{
+	while (tokens)
+	{
+		if (tokens->type == TK_IN || tokens->type == TK_HEREDOC
+			|| tokens->type == TK_OUT || tokens->type == TK_APPEND)
+		{
+			if (valid_syntax_token(tokens) == -1)
+				return (-1);
+		}
+		tokens = tokens->next;
 	}
 	return (0);
 }

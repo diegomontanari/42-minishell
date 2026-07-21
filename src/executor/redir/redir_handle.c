@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   redir_handle.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -77,11 +65,11 @@ int	handle_single_input_redirect(t_token *curr, t_shell *shell, int *input_fd)
 		return (-1);
 	}
 	new_input_fd = open_input_file(curr, shell);
-	if (new_input_fd == -1)
+	if (new_input_fd < 0)
 	{
 		if (*input_fd != -1)
 			close(*input_fd);
-		return (-1);
+		return (new_input_fd);
 	}
 	update_input_fd(input_fd, new_input_fd);
 	return (0);
@@ -94,5 +82,5 @@ int	handle_single_input_redirect(t_token *curr, t_shell *shell, int *input_fd)
 */
 void	setup_sigpipe_handling(void)
 {
-	signal(SIGPIPE, SIG_IGN);
+	signal(SIGPIPE, SIG_DFL);
 }

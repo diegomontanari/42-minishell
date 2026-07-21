@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   cmd_list.c                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -105,12 +93,9 @@ static t_cmd	*cmd_create(t_token *start_node, t_shell *shell)
 		return (NULL);
 	arg_tokens = cmd_extract_tokens(start_node);
 	if (!arg_tokens)
-	{
-		free_cmd(cmd);
-		return (NULL);
-	}
+		return (free_cmd(cmd), NULL);
 	cmd->args = prepare_cmd_args(arg_tokens, shell);
-	if (!cmd->args)
+	if (!cmd->args && count_valid_args(arg_tokens) > 0)
 	{
 		clear_token_list(&arg_tokens);
 		free_cmd(cmd);
@@ -175,7 +160,11 @@ t_cmd	*parser_build_cmd_list(t_token *tokens, t_shell *shell)
 	{
 		if (!parse_next_cmd(&curr_token, shell,
 				&cmds_head, &last_cmd))
-			return (reset_loop_state(shell), NULL);
+		{
+			clear_cmd_list(&cmds_head);
+			shell->exit_status = 1;
+			return (NULL);
+		}
 	}
 	return (cmds_head);
 }

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   clean_structs.c                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -23,6 +11,8 @@ void	clear_token_list(t_token **token)
 	while (*token)
 	{
 		tmp = (*token)->next;
+		if ((*token)->heredoc_fd >= 0)
+			close((*token)->heredoc_fd);
 		free((*token)->value);
 		free(*token);
 		*token = tmp;

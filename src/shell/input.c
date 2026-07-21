@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   input.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -24,26 +12,35 @@
 ** - Otherwise, call execute_command to run the command and store
 **   its exit status in the shell structure.
 */
+static void	print_empty_command_error(char *value)
+{
+	ft_putstr_fd("minishell: ", 2);
+	ft_putstr_fd(value, 2);
+	ft_putstr_fd(": command not found\n", 2);
+}
+
 static int	handle_empty_word_expansion(t_token *tokens, t_shell *shell)
 {
 	if (tokens->value[0] == '\0')
 	{
 		if (tokens->is_quoted)
 		{
-			ft_putstr_fd("minishell: : command not found\n", 2);
+			print_empty_command_error(tokens->value);
 			shell->exit_status = 127;
 		}
+		else
+			shell->exit_status = 0;
 		return (1);
 	}
 	else if (only_spaces(tokens->value))
 	{
 		if (tokens->is_quoted)
 		{
-			ft_putstr_fd("minishell: ", 2);
-			ft_putstr_fd(tokens->value, 2);
-			ft_putstr_fd(": command not found\n", 2);
+			print_empty_command_error(tokens->value);
 			shell->exit_status = 127;
 		}
+		else
+			shell->exit_status = 0;
 		return (1);
 	}
 	return (0);
@@ -79,36 +76,6 @@ void	process_tokens(t_token *tokens, t_shell *shell)
 ** - If valid, process the tokens to execute the command(s).
 ** - After execution, free resources related to the command.
 */
-/*
-				MOVED cleanup_percommand --> prompt.c
-
-				
-void	process_input_line(char *input, t_shell *shell)
-{
-	char	*full_line;
-
-	if (!input || *input == '\0')
-		return ;
-	check_signal_received(shell);
-	full_line = get_full_line(input);
-	if (!full_line)
-		return ;
-	add_history(full_line);
-	shell->tokens = parse_line_to_tokens(full_line, shell);
-	if (full_line != input)
-		free(full_line);
-	if (!shell->tokens)
-		return ;
-	if (check_syntax_pipes(shell->tokens))
-	{
-		shell->exit_status = 2;
-		reset_loop_state(shell);
-		return ;
-	}
-	process_tokens(shell->tokens, shell);
-	reset_loop_state(shell);
-}*/
-
 void	process_input_line(char *input, t_shell *shell)
 {
 	char	*full_line;

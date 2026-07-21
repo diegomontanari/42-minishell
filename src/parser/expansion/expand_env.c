@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   expand_env.c                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -119,11 +107,8 @@ int	expand_find_end_index(char *str, int start)
 **
 ** This function retrieves the value of an environment variable.
 ** - Extract the variable name between start and end indexes.
-** - Look for it in the shell's environment list:
-**     * If found and non-empty, duplicate its value.
-** - If not found, try to get it from the sys_valtem environment
-**   using getenv().
-** - If still not found, return an empty string.
+** - Look for it only in the shell's environment list.
+** - If it is not found or has no value, return an empty string.
 ** - Free the temporary var_name prefix returning.
 */
 char	*get_variable_value(char *str, int start_name, int end, t_shell *shell)
@@ -131,21 +116,14 @@ char	*get_variable_value(char *str, int start_name, int end, t_shell *shell)
 	char	*var_name;
 	char	*val;
 	t_env	*env_entry;
-	char	*sys_val;
 
 	var_name = ft_substr(str, start_name + 1, end - start_name - 1);
 	if (!var_name)
 		return (NULL);
 	env_entry = find_env_node(shell->env, var_name);
-	if (env_entry && env_entry->value && env_entry->value[0] != '\0')
+	if (env_entry && env_entry->value)
 		val = ft_strdup(env_entry->value);
 	else
-	{
-		sys_val = getenv(var_name);
-		if (sys_val)
-			val = ft_strdup(sys_val);
-		else
-			val = ft_strdup("");
-	}
+		val = ft_strdup("");
 	return (free(var_name), val);
 }

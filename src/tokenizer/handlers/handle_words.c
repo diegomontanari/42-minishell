@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   handle_words.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -33,7 +21,8 @@ char	*extract_raw_word(const char *input, int *i)
 	int		len;
 
 	start = *i;
-	while (input[*i] && input[*i] != ' ' && !is_separator(input[*i])
+	while (input[*i] && input[*i] != ' ' && input[*i] != '\t'
+		&& !is_separator(input[*i])
 		&& input[*i] != '\'' && input[*i] != '"')
 		(*i)++;
 	len = *i - start;
@@ -42,6 +31,7 @@ char	*extract_raw_word(const char *input, int *i)
 	word = ft_substr(input, start, *i - start);
 	return (word);
 }
+
 /*
 ** extract_and_expand_word
 **
@@ -80,7 +70,10 @@ void	add_word_token(t_token_ctx *ctx)
 	char	*expanded;
 	int		merge_res;
 
-	expanded = extract_and_expand_word(ctx->input, ctx->i, ctx->shell);
+	if (is_heredoc_delimiter(ctx))
+		expanded = extract_raw_word(ctx->input, ctx->i);
+	else
+		expanded = extract_and_expand_word(ctx->input, ctx->i, ctx->shell);
 	if (!expanded)
 		return ;
 	merge_res = join_to_last_token(ctx, expanded);

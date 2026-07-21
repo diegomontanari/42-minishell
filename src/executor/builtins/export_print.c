@@ -1,16 +1,23 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   export_print.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
+
+static int	needs_export_escape(char c)
+{
+	return (c == '"' || c == '\\' || c == '$' || c == '`');
+}
+
+static void	print_export_value(char *value)
+{
+	int	i;
+
+	i = 0;
+	while (value[i])
+	{
+		if (needs_export_escape(value[i]))
+			ft_putchar_fd('\\', STDOUT_FILENO);
+		ft_putchar_fd(value[i], STDOUT_FILENO);
+		i++;
+	}
+}
 
 /*
 ** This function prints exported environment variables from
@@ -20,14 +27,18 @@ void	print_exported_recursive(t_env **arr, int size, int i)
 {
 	t_env	*node;
 
-	node = arr[i];
 	if (i >= size)
 		return ;
+	node = arr[i];
 	if (node->exported)
 	{
 		ft_printf("declare -x %s", node->key);
 		if (node->value)
-			ft_printf("=\"%s\"", node->value);
+		{
+			ft_putstr_fd("=\"", STDOUT_FILENO);
+			print_export_value(node->value);
+			ft_putchar_fd('"', STDOUT_FILENO);
+		}
 		ft_printf("\n");
 	}
 	print_exported_recursive(arr, size, i + 1);
@@ -43,8 +54,11 @@ void	print_export_sorted(t_env *env_list)
 
 	size = env_list_size(env_list);
 	arr = env_list_to_array(env_list, size);
-	if (size == 0)
+	if (!arr || size == 0)
+	{
+		free(arr);
 		return ;
+	}
 	selection_sort_env(arr, size);
 	print_exported_recursive(arr, size, 0);
 	free(arr);

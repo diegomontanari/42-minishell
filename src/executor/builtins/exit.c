@@ -1,34 +1,31 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   exit.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-/*
-** Handles the `exit` command when an exit code argument is provided.
-*/
-static void	handle_exit_with_code(t_shell *shell, char **args, char *exit_code)
+static void	print_numeric_error(char *arg)
 {
-	if (!is_numeric(exit_code) || check_atol_conversion(exit_code))
-	{
-		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
-		ft_putendl_fd(exit_code, STDERR_FILENO);
-		ft_putendl_fd("numeric argument required", STDERR_FILENO);
-		shell->exit_status = 255;
-		free_str_array(args);
-		full_shell_cleanup(shell);
-		exit(2);
-	}
-	else
-		shell->exit_status = ft_atoi(exit_code);
+	ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
+	ft_putstr_fd(arg, STDERR_FILENO);
+	ft_putendl_fd(": numeric argument required", STDERR_FILENO);
+}
+
+static int	exit_code_value(char *str)
+{
+	int	i;
+	int	negative;
+	int	status;
+
+	i = 0;
+	while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n'
+		|| str[i] == '\r' || str[i] == '\v' || str[i] == '\f')
+		i++;
+	negative = (str[i] == '-');
+	if (str[i] == '+' || str[i] == '-')
+		i++;
+	status = 0;
+	while (str[i] >= '0' && str[i] <= '9')
+		status = (status * 10 + str[i++] - '0') % 256;
+	if (negative && status != 0)
+		status = 256 - status;
+	return (status);
 }
 
 /*
@@ -36,27 +33,20 @@ static void	handle_exit_with_code(t_shell *shell, char **args, char *exit_code)
 */
 int	handle_exit(t_shell *shell, char **args)
 {
-	int	argc;
-
-	argc = 0;
-	while (args[argc])
-		argc++;
-	if (argc == 1)
+	if (!args[1])
+		return (shell->exit_status);
+	if (!is_numeric(args[1]) || check_atol_conversion(args[1]))
 	{
-		ft_putstr_fd("exit\n", STDOUT_FILENO);
-		shell->exit_status = 0;
-		return (0);
+		print_numeric_error(args[1]);
+		shell->exit_status = 2;
+		return (2);
 	}
-	else if (argc == 2)
+	if (args[2])
 	{
-		handle_exit_with_code(shell, args, args[1]);
-		return (0);
-	}
-	else
-	{
-		ft_putendl_fd("minishell: ", STDERR_FILENO);
-		ft_putendl_fd("exit: too many arguments", STDERR_FILENO);
+		ft_putendl_fd("minishell: exit: too many arguments", STDERR_FILENO);
 		shell->exit_status = 1;
 		return (1);
 	}
+	shell->exit_status = exit_code_value(args[1]);
+	return (shell->exit_status);
 }

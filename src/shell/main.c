@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -50,8 +38,8 @@ void	init_shell_state(t_shell *shell, char **envp)
 ** - Call init_shell_state() to set up default values and environment.
 ** - Store the program name as "minishell".
 ** - Set up signal handlers:
-**     * SIGINT (Ctrl+C) → handled by signal_prompt_handler().
-**     * SIGQUIT (Ctrl+\) → ignored.
+**     * SIGINT (Ctrl+C) -> handled by signal_prompt_handler().
+**     * SIGQUIT (Ctrl+\) -> ignored.
 ** - Start the interactive prompt loop with start_shell_loop().
 ** - After exiting the loop, call full_shell_cleanup() to free
 **   all resources.
@@ -60,14 +48,15 @@ void	init_shell_state(t_shell *shell, char **envp)
 int	main(int argc, char **argv, char **envp)
 {
 	t_shell	shell;
+	int		status;
 
 	(void)argc;
 	(void)argv;
 	init_shell_state(&shell, envp);
 	shell.program_name = ft_strdup("minishell");
 	setup_signals_interactive();
-	start_shell_loop(&shell);
+	status = start_shell_loop(&shell);
 	full_shell_cleanup(&shell);
 	rl_clear_history();
-	return (0);
+	return (status);
 }

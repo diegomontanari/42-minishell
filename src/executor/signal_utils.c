@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   signal_utils.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -74,34 +62,29 @@ int	check_signal_received(t_shell *shell)
 	return (0);
 }
 
+static void	print_core_message(char *plain, char *core, int status)
+{
+	if (WCOREDUMP(status))
+		ft_putstr_fd(core, STDOUT_FILENO);
+	else
+		ft_putstr_fd(plain, STDOUT_FILENO);
+}
+
 /*
 ** Prints a descriptive message based on the received signal and process status.
 */
 void	print_signal_message(int signal_number, int status)
 {
 	if (signal_number == SIGQUIT)
-	{
-		if (WCOREDUMP(status))
-			ft_printf("Quit (core dumped)\n");
-		else
-			ft_printf("Quit\n");
-	}
+		print_core_message("Quit\n", "Quit (core dumped)\n", status);
 	else if (signal_number == SIGTERM)
-	{
-		if (WCOREDUMP(status))
-			ft_printf("Terminated (core dumped)\n");
-		else
-			ft_printf("Terminated\n");
-	}
+		print_core_message("Terminated\n",
+			"Terminated (core dumped)\n", status);
 	else if (signal_number == SIGKILL)
 		ft_printf("Killed\n");
 	else if (signal_number == SIGINT)
 		ft_printf("\n");
 	else if (signal_number == SIGSEGV)
-	{
-		if (WCOREDUMP(status))
-			ft_printf("Segmentation fault (core dumped)\n");
-		else
-			ft_printf("Segmentation fault\n");
-	}
+		print_core_message("Segmentation fault\n",
+			"Segmentation fault (core dumped)\n", status);
 }

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   handle_quotes.c                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -28,21 +16,21 @@
 **   used instead.
 ** - Return the final quoted string (allocated), or NULL on error.
 */
-static char	*process_quoted_content(const char *input, int *i, t_shell *shell)
+static char	*process_quoted_content(t_token_ctx *ctx)
 {
 	char	*quoted;
 	char	*expanded;
 	char	quote_type;
 
-	if (!input[*i])
+	if (!ctx->input[*ctx->i])
 		return (NULL);
-	quote_type = input[*i];
-	quoted = extract_quoted_content(input, i, quote_type);
+	quote_type = ctx->input[*ctx->i];
+	quoted = extract_quoted_content(ctx->input, ctx->i, quote_type);
 	if (!quoted)
 		return (NULL);
-	if (quote_type == '"')
+	if (quote_type == '"' && !is_heredoc_delimiter(ctx))
 	{
-		expanded = expand_variables(quoted, shell);
+		expanded = expand_variables(quoted, ctx->shell);
 		free(quoted);
 		if (!expanded)
 			return (NULL);
@@ -59,8 +47,8 @@ static char	*process_quoted_content(const char *input, int *i, t_shell *shell)
 **   and handle escapes if needed.
 ** - If extraction fails, return 0 (error).
 ** - The quoted string may be joined to the last word token:
-**     * If result is 1, it was successfully joined → return 1.
-**     * If result is -1, an error occurred → return 0.
+**     * If result is 1, it was successfully joined -> return 1.
+**     * If result is -1, an error occurred -> return 0.
 ** - Otherwise, create a new TK_WORD token with the quoted string
 **   and add it to the token list.
 ** - The quoted string is then freed, and the function returns 1.
@@ -70,12 +58,13 @@ int	add_quoted_token(t_token_ctx *ctx)
 	char	*quoted;
 	int		merge_res;
 
-	quoted = process_quoted_content(ctx->input, ctx->i, ctx->shell);
+	quoted = process_quoted_content(ctx);
 	if (!quoted)
 		return (0);
 	merge_res = join_to_last_token(ctx, quoted);
 	if (merge_res == 1)
 	{
+		get_last_token(*(ctx->tokens))->is_quoted = 1;
 		free(quoted);
 		return (1);
 	}

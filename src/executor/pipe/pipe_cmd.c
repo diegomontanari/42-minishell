@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   pipe_cmd.c                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -26,7 +14,13 @@ int	setup_command_execution(t_cmd *curr, int *fds, pid_t *pid)
 		return (print_error("pipe"));
 	*pid = fork();
 	if (*pid == -1)
+	{
+		if (fds[1] != -1)
+			close(fds[1]);
+		if (fds[2] != -1)
+			close(fds[2]);
 		return (print_error("fork"));
+	}
 	return (0);
 }
 
@@ -40,7 +34,7 @@ int	execute_single_command(t_cmd *curr, int *fds,
 {
 	pid_t	pid;
 
-	if (setup_command_execution(curr, fds, &pid) == 1)
+	if (setup_command_execution(curr, fds, &pid) != 0)
 		return (1);
 	*last_pid = pid;
 	if (pid == 0)
@@ -48,10 +42,6 @@ int	execute_single_command(t_cmd *curr, int *fds,
 	if (fds[0] != -1)
 		close(fds[0]);
 	if (curr->next)
-	{
 		close(fds[2]);
-		if (has_output_redirection(curr->tokens))
-			close(fds[1]);
-	}
 	return (0);
 }

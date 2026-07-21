@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   exit_utils.c                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -25,18 +13,24 @@ int	skip_spaces(const char *str)
 	return (i);
 }
 
-static int	is_overflow(char *str, int i, int sign)
+static int	is_exit_space(char c)
+{
+	return (c == ' ' || c == '\t' || c == '\n' || c == '\r'
+		|| c == '\v' || c == '\f');
+}
+
+static int	number_overflows(char *str, int i, unsigned long limit)
 {
 	unsigned long	result;
+	unsigned long	digit;
 
 	result = 0;
 	while (str[i] >= '0' && str[i] <= '9')
 	{
-		result = result * 10 + (str[i] - '0');
-		if (sign == 1 && result > (unsigned long)LONG_MAX)
+		digit = (unsigned long)(str[i] - '0');
+		if (result > (limit - digit) / 10)
 			return (1);
-		if (sign == -1 && result > (unsigned long)LONG_MAX + 1UL)
-			return (1);
+		result = result * 10 + digit;
 		i++;
 	}
 	return (0);
@@ -48,32 +42,20 @@ static int	is_overflow(char *str, int i, int sign)
 */
 int	check_atol_conversion(char *str)
 {
-	int	i;
-	int	sign;
+	unsigned long	limit;
+	int				i;
 
-	if (!str || str[0] == '\0')
+	if (!str)
 		return (1);
-	i = skip_spaces(str);
-	sign = 1;
-	if (str[i] == '+' || str[i] == '-')
-	{
-		if (str[i] == '-')
-			sign = -1;
+	i = 0;
+	while (is_exit_space(str[i]))
 		i++;
-	}
-	if (str[i] == '\0' || str[i] < '0' || str[i] > '9')
-		return (1);
-	return (is_overflow(str, i, sign));
-}
-
-static int	skip_prefix(char *str)
-{
-	int	i;
-
-	i = skip_spaces(str);
+	limit = (unsigned long)LONG_MAX;
+	if (str[i] == '-')
+		limit++;
 	if (str[i] == '+' || str[i] == '-')
 		i++;
-	return (i);
+	return (number_overflows(str, i, limit));
 }
 
 /*
@@ -82,28 +64,19 @@ static int	skip_prefix(char *str)
 int	is_numeric(char *str)
 {
 	int	i;
-	int	has_digits;
 
-	if (!str || str[0] == '\0')
+	if (!str)
 		return (0);
-	i = skip_prefix(str);
-	if (str[i] == '\0')
+	i = 0;
+	while (is_exit_space(str[i]))
+		i++;
+	if (str[i] == '+' || str[i] == '-')
+		i++;
+	if (str[i] < '0' || str[i] > '9')
 		return (0);
-	has_digits = 0;
-	while (str[i])
-	{
-		if (str[i] >= '0' && str[i] <= '9')
-		{
-			has_digits = 1;
-			i++;
-		}
-		else if (str[i] == ' ' || str[i] == '\t')
-		{
-			i = skip_spaces(str);
-			break ;
-		}
-		else
-			return (0);
-	}
-	return (has_digits);
+	while (str[i] >= '0' && str[i] <= '9')
+		i++;
+	while (is_exit_space(str[i]))
+		i++;
+	return (str[i] == '\0');
 }

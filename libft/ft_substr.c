@@ -1,27 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_substr.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pscarcin <pscarcin@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/14 18:33:36 by pscarcin          #+#    #+#             */
+/*   Updated: 2025/01/14 18:34:29 by pscarcin         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "libft.h"
 
 char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
-	size_t	str_len;
-	size_t	i;
-	char	*dest;
+	char			*substr;
+	unsigned int	slen;
 
-	if (!s)
+	if (s == NULL)
 		return (NULL);
-	str_len = ft_strlen(s);
-	if (start >= str_len)
+	slen = ft_strlen(s);
+	if (start >= slen)
 		return (ft_strdup(""));
-	if (len > str_len - start)
-		len = str_len - start;
-	dest = malloc(len + 1);
-	if (!dest)
+	if (len > (slen - start))
+		len = slen - start;
+	substr = malloc(sizeof(char) * (len + 1));
+	if (!substr)
 		return (NULL);
-	i = 0;
-	while (i < len && s[start + i] != '\0')
-	{
-		dest[i] = s[start + i];
-		i++;
-	}
-	dest[len] = '\0';
-	return (dest);
+	ft_memcpy(substr, s + start, len);
+	substr[len] = '\0';
+	return (substr);
 }

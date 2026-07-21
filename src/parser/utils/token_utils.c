@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   token_utils.c                               :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -93,4 +81,22 @@ int	join_to_last_token(t_token_ctx *ctx, char *append_str)
 	free(last->value);
 	last->value = joined;
 	return (1);
+}
+
+int	is_heredoc_delimiter(t_token_ctx *ctx)
+{
+	t_token	*last;
+	t_token	*current;
+
+	last = get_last_token(*(ctx->tokens));
+	if (!last)
+		return (0);
+	if (last->type == TK_HEREDOC)
+		return (1);
+	if (ctx->has_space || last->type != TK_WORD)
+		return (0);
+	current = *(ctx->tokens);
+	while (current && current->next != last)
+		current = current->next;
+	return (current && current->type == TK_HEREDOC);
 }

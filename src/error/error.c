@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   error.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 /*
 ** Prints an error message, optionally cleans up resources,
@@ -26,8 +14,6 @@
 **      `reset_loop_state` to free per-command resources.
 ** 4. Exit the program with `EXIT_FAILURE`.
 */
-// aggiunta di codice???? 			//else if (context)
-									// reset_loop_state((t_shell *)context);
 void	exit_with_error(char *msg, void *context, int flag, int use_errno)
 {
 	if (use_errno)

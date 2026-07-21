@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor_ext.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -19,15 +7,14 @@ int	execute_exit(char **args, t_shell *shell)
 {
 	int	status;
 
+	ft_putstr_fd("exit\n", STDOUT_FILENO);
 	status = handle_exit(shell, args);
-	if (status == 0)
-	{
-		restore_redirection(shell);
-		free_str_array(args);
-		full_shell_cleanup(shell);
-		exit(shell->exit_status);
-	}
-	return (status);
+	if (status == 1 && args[1] && args[2])
+		return (status);
+	restore_redirection(shell);
+	free_str_array(args);
+	full_shell_cleanup(shell);
+	exit(status);
 }
 
 /*

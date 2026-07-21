@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   path.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 static char	*build_full_path(char *dir, char *command)
@@ -17,6 +5,8 @@ static char	*build_full_path(char *dir, char *command)
 	char	*temp;
 	char	*full_path;
 
+	if (!dir[0])
+		return (ft_strdup(command));
 	temp = ft_strjoin(dir, "/");
 	if (!temp)
 		return (NULL);
@@ -26,21 +16,29 @@ static char	*build_full_path(char *dir, char *command)
 
 static char	*search_command_in_paths(char **paths, char *command)
 {
-	char	*full_path;
-	int		i;
+	char		*full_path;
+	char		*denied_path;
+	int			i;
+	struct stat	path_stat;
 
 	i = 0;
+	denied_path = NULL;
 	while (paths[i])
 	{
 		full_path = build_full_path(paths[i], command);
 		if (!full_path)
-			return (NULL);
-		if (access(full_path, X_OK) == 0)
-			return (full_path);
-		free(full_path);
+			return (free(denied_path), NULL);
+		if (access(full_path, X_OK) == 0
+			&& stat(full_path, &path_stat) == 0
+			&& !S_ISDIR(path_stat.st_mode))
+			return (free(denied_path), full_path);
+		if (!denied_path && access(full_path, F_OK) == 0)
+			denied_path = full_path;
+		else
+			free(full_path);
 		i++;
 	}
-	return (NULL);
+	return (denied_path);
 }
 
 static char	*search_in_path_dirs(char *command, t_shell *shell)

@@ -1,5 +1,5 @@
 # Compiler and flags
-CC      = gcc
+CC      = cc
 CFLAGS  = -Wall -Wextra -Werror \
           -Iinclude -Ilibft
 
@@ -72,6 +72,8 @@ SRC     = \
         executor/redir/redir_apply.c \
         executor/redir/redir_handle.c \
         executor/redir/heredoc.c \
+        executor/redir/heredoc_temp.c \
+        executor/redir/heredoc_prepare.c \
         parser/utils/token_utils.c \
         parser/utils/utils.c \
         parser/redirection/validate_redir.c \
@@ -81,13 +83,61 @@ SRC     = \
         parser/expansion/expand_vars.c \
         shell/main.c \
         shell/prompt.c \
-        shell/input.c 
+        shell/input.c
 
 # Object files
 OBJ     = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
 # Path to libft
 LIBFT   = $(LIBFT_DIR)/libft.a
+LIBFT_SRC = $(addprefix $(LIBFT_DIR)/, \
+	ft_atoi.c \
+	ft_bzero.c \
+	ft_calloc.c \
+	get_next_line.c \
+	ft_hex_utils.c \
+	ft_isalnum.c \
+	ft_isalpha.c \
+	ft_isascii.c \
+	ft_isdigit.c \
+	ft_isprint.c \
+	ft_itoa.c \
+	ft_memchr.c \
+	ft_memcmp.c \
+	ft_memcpy.c \
+	ft_memmove.c \
+	ft_memset.c \
+	ft_printf.c \
+	ft_putchar_fd.c \
+	ft_putendl_fd.c \
+	ft_putnbr_fd.c \
+	ft_putstr_fd.c \
+	ft_split.c \
+	ft_strchr.c \
+	ft_strcmp.c \
+	ft_strdup.c \
+	ft_striteri.c \
+	ft_strjoin.c \
+	ft_strlcat.c \
+	ft_strlcpy.c \
+	ft_strlen.c \
+	ft_strmapi.c \
+	ft_strncmp.c \
+	ft_strnstr.c \
+	ft_strrchr.c \
+	ft_strtrim.c \
+	ft_substr.c \
+	ft_tolower.c \
+	ft_toupper.c \
+	ft_utils.c)
+
+HEADERS = \
+	include/cleanup.h \
+	include/executor.h \
+	include/minishell.h \
+	include/parser.h \
+	include/tokenizer.h \
+	$(LIBFT_DIR)/libft.h
 
 # Default target
 all: $(NAME)
@@ -97,12 +147,12 @@ $(NAME): $(LIBFT) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(LDFLAGS) -lreadline -o $(NAME)
 
 # Compile objects (keeps directory structure in obj/)
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build libft
-$(LIBFT):
+$(LIBFT): $(LIBFT_SRC) $(LIBFT_DIR)/libft.h $(LIBFT_DIR)/Makefile
 	$(MAKE) -C $(LIBFT_DIR)
 
 # Cleaning rules
@@ -112,6 +162,7 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+	rm -rf $(NAME).dSYM
 	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all

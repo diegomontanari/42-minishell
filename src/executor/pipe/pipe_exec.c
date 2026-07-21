@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   pipe_exec.c                                 :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 #include <sys/wait.h>
 
@@ -22,12 +10,7 @@
 static int	setup_next_pipe(t_cmd *curr, int pipe_fd[2])
 {
 	if (curr->next)
-	{
-		if (has_output_redirection(curr->tokens))
-			return (-1);
-		else
-			return (pipe_fd[0]);
-	}
+		return (pipe_fd[0]);
 	return (-1);
 }
 
@@ -71,7 +54,11 @@ static int	wait_for_children(pid_t last_pid, t_shell *shell)
 	while (pid > 0)
 	{
 		if (pid == last_pid)
+		{
+			if (WIFSIGNALED(status))
+				print_signal_message(WTERMSIG(status), status);
 			last_status = handle_signal_exit_status(status, shell);
+		}
 		else
 			handle_signal_exit_status(status, shell);
 		pid = waitpid(-1, &status, 0);
@@ -90,6 +77,8 @@ int	execute_pipeline(t_cmd *cmds, t_shell *shell)
 	error_occurred = execute_commands_loop(cmds, shell, &last_pid);
 	if (error_occurred)
 	{
+		wait_for_children(last_pid, shell);
+		shell->exit_status = 1;
 		setup_signals_interactive();
 		return (1);
 	}
@@ -109,7 +98,17 @@ int	handle_pipeline_execution(t_token *tokens, t_shell *shell)
 
 	shell->cmds = parser_build_cmd_list(tokens, shell);
 	if (!shell->cmds)
-		return (-1);
+	{
+		shell->exit_status = 1;
+		return (1);
+	}
+	status = prepare_pipeline_heredocs(shell->cmds, shell);
+	if (status < 0)
+	{
+		if (status != -2)
+			shell->exit_status = 1;
+		return (shell->exit_status);
+	}
 	status = execute_pipeline(shell->cmds, shell);
 	shell->exit_status = status;
 	return (status);

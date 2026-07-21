@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor_utils.c                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -51,10 +39,13 @@ char	**build_envp_from_list(t_env *env)
 	i = 0;
 	while (env)
 	{
-		environment_array[i] = create_key_value_string(env);
-		if (!environment_array[i])
-			return (free_str_array(environment_array), NULL);
-		i++;
+		if (env->exported && env->value)
+		{
+			environment_array[i] = create_key_value_string(env);
+			if (!environment_array[i])
+				return (free_str_array(environment_array), NULL);
+			i++;
+		}
 		env = env->next;
 	}
 	environment_array[i] = NULL;

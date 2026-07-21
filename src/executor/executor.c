@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor.c                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 #include <sys/stat.h>
 
@@ -37,9 +25,13 @@ int	execute_command_type(char **args, t_shell *shell)
 	return (status);
 }
 
-static int	handle_external_command(char **args, t_shell *shell)
+static int	redirection_failure(char **args, int code, t_shell *shell)
 {
-	return (execute_command_type(args, shell));
+	free_str_array(args);
+	shell->exit_status = 1;
+	if (code == -2)
+		shell->exit_status = 130;
+	return (shell->exit_status);
 }
 
 static int	handle_builtin_execution(char **args, t_shell *shell)
@@ -52,17 +44,18 @@ static int	handle_builtin_execution(char **args, t_shell *shell)
 
 static int	prepare_and_redir(t_token *tokens, char ***args, t_shell *shell)
 {
+	int	redir_status;
+
 	if (!tokens)
 		return (handle_null_tokens(shell));
 	if (check_for_pipes(tokens))
 		return (handle_pipeline_execution(tokens, shell));
 	*args = prepare_cmd_args(tokens, shell);
-	if (handle_redirection_with_tokens(tokens, shell) == -1)
-	{
-		free_str_array(*args);
-		shell->exit_status = 1;
-		return (1);
-	}
+	if (!*args && count_valid_args(tokens) > 0)
+		return (redirection_failure(NULL, -1, shell));
+	redir_status = handle_redirection_with_tokens(tokens, shell);
+	if (redir_status < 0)
+		return (redirection_failure(*args, redir_status, shell));
 	if (!*args)
 	{
 		restore_redirection(shell);
@@ -77,13 +70,18 @@ int	execute_command(t_token *tokens, t_shell *shell)
 	char	**args;
 	int		status;
 
+	if (validate_redirection_syntax(tokens) == -1)
+	{
+		shell->exit_status = 2;
+		return (2);
+	}
 	status = prepare_and_redir(tokens, &args, shell);
 	if (status != -1)
 		return (status);
 	if (is_builtin(args[0]))
 		status = handle_builtin_execution(args, shell);
 	else
-		status = handle_external_command(args, shell);
+		status = execute_command_type(args, shell);
 	restore_redirection(shell);
 	free_str_array(args);
 	shell->exit_status = status;

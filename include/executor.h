@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   executor.h                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: user <user@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/19 20:04:33 by user          #+#    #+#             */
-/*   Updated: 2026/07/19 20:04:33 by user         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef EXECUTOR_H
 # define EXECUTOR_H
 
@@ -17,7 +5,7 @@
 # include "tokenizer.h"
 # include <sys/stat.h>
 
-// Forward declaration
+/* Forward declaration */
 struct					s_shell;
 
 /*  CORE EXECUTION STRUCTS  */
@@ -40,7 +28,7 @@ typedef enum e_cmd_type
 
 typedef struct s_cmd	t_cmd;
 
-struct					s_cmd
+struct s_cmd
 {
 	char			**args;
 	char			*path;
@@ -51,7 +39,7 @@ struct					s_cmd
 	t_token			*tokens;
 };
 
-//    1) EXECUTOR CORE (src/executor/)
+/* 1) EXECUTOR CORE */
 
 /* executor.c */
 int		execute_command_type(char **args, struct s_shell *shell);
@@ -99,7 +87,7 @@ int		count_path_segments(char *path_env);
 char	**allocate_paths_array(int count);
 char	*extract_path_segment(char *path_env, int start, int len);
 
-//  2) BUILTINS (src/executor/builtins/)
+/* 2) BUILTINS */
 
 /* builtins.c */
 int		is_builtin(char *command);
@@ -170,7 +158,7 @@ int		handle_unset(t_env **env_list, char **argv);
 int		unset_variable(t_env **env_list, char **args);
 int		remove_env_node(t_env **env_list_ptr, char *key);
 
-//   3) PIPELINE (src/executor/pipe/)
+/* 3) PIPELINE */
 
 /* pipe_exec.c */
 int		execute_pipeline(t_cmd *cmds, struct s_shell *shell);
@@ -194,7 +182,7 @@ int		execute_single_command(t_cmd *curr, int *fds,
 void	setup_child_io_and_signals(t_cmd *curr, int prev_fd, int *pipe_fd,
 			struct s_shell *shell);
 
-//   4) REDIRECTION (src/executor/redir/)
+/* 4) REDIRECTION */
 
 /* redir_exec.c */
 int		handle_input_redirection_with_tokens(t_token *tokens,
@@ -230,5 +218,12 @@ void	setup_sigpipe_handling(void);
 /* heredoc.c */
 int		create_heredoc_pipe(char *delimiter, int is_quoted,
 			struct s_shell *shell);
+int		open_heredoc_temp(char **path);
+int		close_heredoc_temp(char *path, int fd, int reopen_file);
+int		finish_heredoc_file(pid_t pid, int fd, char *path,
+			struct s_shell *shell);
+int		write_heredoc_data(int fd, char *data, size_t len);
+int		prepare_pipeline_heredocs(t_cmd *cmds, struct s_shell *shell);
+void	close_pipeline_heredocs(t_cmd *cmds);
 
 #endif
