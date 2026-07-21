@@ -3,6 +3,18 @@ CC      = gcc
 CFLAGS  = -Wall -Wextra -Werror \
           -Iinclude -Ilibft
 
+# macOS (e.g. local dev machine) ships an old libedit as readline.h,
+# which is missing symbols like rl_replace_line. On Linux (42 campus)
+# the system readline is fine, so this only kicks in on Darwin.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	READLINE_PREFIX := $(shell brew --prefix readline 2>/dev/null)
+	ifneq ($(READLINE_PREFIX),)
+		CFLAGS  += -I$(READLINE_PREFIX)/include
+		LDFLAGS += -L$(READLINE_PREFIX)/lib
+	endif
+endif
+
 # Directories
 SRC_DIR   = src
 OBJ_DIR   = obj
@@ -82,7 +94,7 @@ all: $(NAME)
 
 # Link final binary
 $(NAME): $(LIBFT) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -lreadline -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) $(LDFLAGS) -lreadline -o $(NAME)
 
 # Compile objects (keeps directory structure in obj/)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c

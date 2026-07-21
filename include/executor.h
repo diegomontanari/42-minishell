@@ -78,7 +78,6 @@ int		execute_external_command(char *cmd_path, char **args,
 
 /* signals.c */
 void	signal_handler_interactive(int sig);
-void	signal_handler_executing(int sig);
 void	setup_signals_interactive(void);
 void	setup_signals_executing(void);
 void	setup_signals_child(void);

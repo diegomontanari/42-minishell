@@ -33,23 +33,6 @@ void	signal_handler_interactive(int sig)
 }
 
 /*
-** Handles signals during command execution (non-interactive mode).
-*/
-void	signal_handler_executing(int sig)
-{
-	if (sig == SIGINT)
-	{
-		g_signal = SIGINT;
-		ft_printf("\n");
-	}
-	else if (sig == SIGQUIT)
-	{
-		g_signal = SIGQUIT;
-		ft_printf("Quit: 3\n");
-	}
-}
-
-/*
 ** Configures signal handling for interactive shell mode.
 */
 void	setup_signals_interactive(void)
