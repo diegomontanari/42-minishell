@@ -25,8 +25,6 @@
 # include <errno.h>
 # include <limits.h>
 # include <fcntl.h>
-# include <dirent.h>
-# include <termios.h>
 
 // PROJECT INCLUDES
 
